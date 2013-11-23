@@ -1,15 +1,9 @@
-MY SVN
+MY RC
 ===========
 
-this is my baidu svn
-
-trustgo
-----------
-
-trustgo progject 
-
+this is my rc files 
 
 bin
 ---------
-
 my tools 
+
