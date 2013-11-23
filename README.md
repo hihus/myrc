@@ -1,0 +1,4 @@
+myrc
+====
+
+my rc files
