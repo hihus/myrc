@@ -1,0 +1,186 @@
+PS1="[\u@\h \W]\\$ "
+export CLICOLOR=1
+export EDITOR=vim
+export SVN_EDITOR=vim
+export SSH_ALL_SCP_STATS=1
+
+export CDPATH=.:~/Desktop
+
+export NDK_HOME="/Users/dolfly/Applications/android-ndks"
+export MYSQL_HOME="/usr/local/mysql"
+export GO_HOME="/usr/local/go"
+export MONGODB_HOME="/Users/dolfly/Applications/mongodb"
+export PATH=$HOME/Tools:$MYSQL_HOME/bin:$NDK_HOME:$GO_HOME/bin:$MONGODB_HOME/bin:/opt/local/bin:/opt/local/sbin:$PATH
+export GOROOT=$GO_HOME
+export GOPATH=.:/Users/dolfly/Code/go:/Users/dolfly/Code/github/go-games
+
+export SOLR_HOME="${HOME}/Applications/solr4.0.0"
+export HADOOP_HOME="${HOME}/Applications/hadoop2.2.0"
+
+export PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
+
+
+
+
+alias adb='/Users/dolfly/Applications/android-sdks/platform-tools/adb'
+alias plistbuddy='/usr/libexec/PlistBuddy '
+
+alias md2html='/usr/local/bin/Markdown.pl '
+
+alias phpvld="`type -path php` -dvld.active=1 -dvld.execute=0 -dvld.verbosity=3 "
+
+alias ll='ls -al'
+alias h='history'
+
+alias httpload='/usr/local/bin/http_load '
+
+export JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8 "
+alias javac='javac -J-Dfile.encoding=UTF-8 '
+alias javah='javah -J-Dfile.encoding=UTF-8 '
+
+alias ldd='otool -L '
+alias strace='dtruss '
+
+alias snet='lsof -P -i -n  '
+
+function tac(){
+	if [ !-f $1 ] ; then
+		echo "usage: tac file "	
+		return 1
+	fi
+	sed -e '1!G;h;$!d' $1
+	# sed -n -e '1!G;h;$p;' $1
+}
+function gitsvn(){
+	command=$1
+	[ -z "${command}" ] || exit  
+}
+
+function hsize () {  
+	if [[ $1 =~ ^[1-9][0-9]*$ ]] ; then
+		hsize_s=$1
+		hsize_s_len=${#hsize_s}
+		if (( hsize_s_len > 32 )) ; then
+			echo "the <integer> is not valid!"
+			return 2
+		fi
+	else
+		echo "usage: hsize <integer> "
+		return 1
+	fi
+
+	hsize_dw=( '\033[32mB\033[0m' '\033[32mKB\033[0m' '\033[32mMB\033[0m' '\033[32mGB\033[0m' '\033[32mTB\033[0m' '\033[32mPB\033[0m' '\033[32mEB\033[0m' '\033[32mZB\033[0m' '\033[32mYB\033[0m' '\033[32mBB\033[0m' '\033[32mNB\033[0m' '\033[32mDB\033[0m' '\033[32mxB\033[0m' )
+	hsize_s_str=''
+
+	for hsize_sdw in ${hsize_dw[@]} ; do
+		hsize_s_len=${#hsize_s}
+		if (( hsize_s_len > 9 )) ; then
+			hsize_y=$(echo "scale=0;$hsize_s % 1024 " |bc )
+			hsize_s=$(echo "scale=0;$hsize_s / 1024 " |bc ) 
+			hsize_s_str="${hsize_y}${hsize_sdw}${hsize_s_str}"
+		else
+			if (( hsize_s < 1024 )) ; then
+				hsize_s_str="${hsize_s}${hsize_sdw}${hsize_s_str}"
+				break
+			else
+				hsize_y=$(( hsize_s % 1024 ))
+				hsize_s=$(( hsize_s / 1024 )) 
+				hsize_s_str="${hsize_y}${hsize_sdw}${hsize_s_str}"
+			fi
+		fi
+	done
+	echo -e ${hsize_s_str}
+	return 0
+}	# ----------  end of function hsize  ----------
+function mcd(){
+	pushd ~/Code/svn/sogou/userplatform/daohang/trunk/yingshi
+}
+function gbk2utf8(){	
+	ICONV_CMD="/usr/bin/iconv "
+	filename=$1
+	if [ ! -f ${filename} ] ; then
+		echo "${filename} is not exists" 
+		return 1
+	fi
+	$ICONV_CMD -f gbk -t utf8 ${filename} > ${filename%.*}.utf8.${filename##*.}
+}
+
+function iplist(){
+	datafile="/Users/dolfly/.iplist"
+	if [ ! -f "$datafile" ] ; then
+		return 
+	fi
+
+	n=$1
+
+	if [[ $n =~ ^[0-9]+$ ]] ; then
+		sed -n -e "${n}p" $datafile | cut -d' ' -f1
+		return 
+	else
+		cat $datafile
+	fi
+}
+
+
+function showtd(){	
+	td `osascript $HOME/.bin/td.scpt  `
+}
+function td(){
+	passcode=$1
+	ip=$2
+	server=$3
+	if [ "x$passcode" == "x" ] ; then 
+		echo "passcode is need" 
+		return 1
+	fi
+	#--------
+	USERNAME="yuezhao"
+	PREPASSCODE="y21243"
+	#--------
+
+	s_l=('202.106.182.212' '202.106.184.253' '219.142.118.199' '202.106.182.212')
+	case "$server" in 
+		"t1") 
+			C_SERVER=${s_l[0]}
+			;;
+		"t2")
+			C_SERVER=${s_l[1]}
+			;;
+		"d1")
+			C_SERVER=${s_l[2]}
+			;;
+		"d2")
+			C_SERVER=${s_l[3]}
+			;;
+		*)
+			C_SERVER=${s_l[0]}
+			;;
+	esac
+	expect "$HOME/.bin/ssh.exp" "${C_SERVER}" "${ip}" "${PREPASSCODE}$passcode" "${USERNAME}" "${PASSWD}" "${PORT}"
+	sleep 1
+}
+
+# create the pane with irssi's nicklist
+function irssi_nickpane() {
+	tmux renamew irssi                                              # name the window
+	tmux -q setw main-pane-width $(( $(tput cols) - 21))            # set the main pane width to the total width-20
+	tmux splitw -v "cat ~/.irssi/nicklistfifo"                      # create the window and begin reading the fifo
+	tmux -q selectl main-vertical                                   # assign the layout
+	tmux selectw -t irssi                                           # select window 'irssi'
+	tmux selectp -t 0                                               # select pane 0
+}
+
+# irssi wrapper
+function irssi() {
+	irssi_nickpane
+	$(which irssi)                                                  # launch irssi
+}
+
+# repair running irssi's nicklist pane
+function irssi_repair() {
+	tmux selectw -t irssi
+	tmux selectp -t 0
+	tmux killp -a                                                   # kill all panes
+	irssi_nickpane
+}
+PATH=$PATH:$HOME/.bin:$HOME/.rvm/bin # Add RVM to PATH for scripting
