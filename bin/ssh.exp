@@ -1,0 +1,39 @@
+#!/usr/bin/expect -f 
+set IP	   [lindex $argv 0]
+set MIP    [lindex $argv 1]
+set PASSCODE [lindex $argv 2]
+set USER   [lindex $argv 3]
+set PASSWD [lindex $argv 4]
+set PORT   [lindex $argv 5]
+
+#------------------------
+set PASSWD "eZLGS4yIOVlvrTRE6L0L1/QjrpQmD7vELH4f2tcqg3hpca4Q7S2GJCXklvSC5IMcM"
+set PORT "22"
+set USER "yuezhao"
+#------------------------
+set logdate [clock format [clock seconds] -format %Y%m%d-%H%M]
+set devicename "localhost"
+set logfile	   "$devicename-ssh.expect-log-$logdate"
+log_file "/tmp/$logfile"
+
+spawn ssh -l $USER $IP -p $PORT
+expect -exact "(yes/no)?" {
+	send -- "yes\r"
+		expect -exact "*password:" {
+			send "$PASSWD\r"
+		}
+} "password:" { send "$PASSWD\r"} "*host" {exit 1}
+
+expect "Enter PASSCODE:" {
+	send "$PASSCODE\r"
+	expect "PASSCODE Accepted*Enter:" {
+		send -- "1\r"
+	} "Access Denied*Enter PASSCODE:" {
+		exit 1
+	}
+} 
+
+expect -exact "server ip or domain name ( 'q' to exit ): " {
+	send -- "$MIP\r"
+		interact
+}
