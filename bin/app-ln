@@ -13,13 +13,15 @@ commonfile=$( cd $( dirname $0 ) >/dev/null 2>&1; pwd )/appcommon
 
 function usage(){
 	local SCRIPTNAME=${SCRIPTNAME:=$(basename $0)}
+	local cmds=$( echo "CMDS_$SCRIPTNAME" | tr '[a-z]' '[A-Z]' | sed -e 's/-/_/g' )
 	cat <<EOF
 Usage:  ${SCRIPTNAME} is a tools for create links file 
 	${SCRIPTNAME} -c <command> <[-p <projname> [-a <appname>] ]| [-a <appname>]> 
-		command : ${CMDS_APP_LN[@]}
+		command : $(eval echo '${'${cmds}'[@]}' ) 
 			-p <projname> : projname must be an exists project name
 			-a <appname>  : appname must be an exists project's app name
 	${SCRIPTNAME} -h show this help  
+	${SCRIPTNAME} -v show version
 EOF
 }
 

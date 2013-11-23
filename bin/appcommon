@@ -16,7 +16,7 @@ PROJNAME="newpro"
 
 
 #####
-#
+# define command
 #####
 CMDS_APP_CG=( 'showhelp' 'genapp' 'genapi' 'genpage' )
 CMDS_APP_LN=( 'showhelp' 'add_ln' 'del_ln' )
