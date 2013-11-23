@@ -1,0 +1,153 @@
+#!/bin/bash
+commonfile=$( cd $( dirname $0 ) >/dev/null 2>&1; pwd )/appcommon
+[ -f "${commonfile}" ] && { 
+	. "${commonfile}" 
+}|| {
+	echo "${commonfile} is not exists" ;exit 1
+}
+
+########### 
+#  FUNCTIONS util 
+###########
+
+
+function usage(){
+	local SCRIPTNAME=${SCRIPTNAME:=$(basename $0)}
+	cat <<EOF
+Usage:  ${SCRIPTNAME} is a tools for create code
+	${SCRIPTNAME} -c <command> [ -p <projname> [-a <appname>]  |-a <appname> |  -a <appname> -n <cname> ] 
+		command : ${CMDS_APP_CG}
+			-p <projname> : projname must be an exists project name
+			-a <appname>  : appname must be an exists project's app name
+			-n <cname>    : class name 
+	app-cg -h show this help  
+EOF
+}
+function deal_dir_tpl(){
+	local lndir=$1
+	local appname=$2
+	local projname=$3
+	local cur_lndir=$( echo $lndir | sed -e "s/<appname>/${appname}/g;s/<projname>/${projname}/g" )
+	echo $cur_lndir
+}
+
+########### 
+# FUNCTIONS command
+########### 
+
+function genapp(){
+	local appname=$1
+	local projname=$2
+
+	[ -z "$appname" ] &&  app_show "the appname is null " && return 1
+
+	local odp_app_cg_dir="${ODPJUMBO_DIR}/php/phplib/app-cg"
+
+	[ -d "${odp_app_cg_dir}" ] && { 
+		pushd "${odp_app_cg_dir}";
+
+		app_trace "crete new conf.php "
+		[ -f "conf.php" ] && mv conf.php{,.$$}
+
+		cat  >conf.php <<EOF
+<?php
+/**
+ * @name conf.php
+ * @desc app-cg的配置文件
+ * @author $TPL_NAME($TPL_EMAIL)
+ */
+\$conf= array
+(
+    'AUTHOR' => '$TPL_NAME($TPL_EMAIL)',//开发人员
+	'PRODUCT_NAME' => '${projname}',//产品线名字, 不要包含下划线'_', 请确保这也是一个合法的文件夹名    
+    'APP_NAME' => '${appname}',//app名字,不要包含下划线'_',请确保这也是一个合法的文件夹名
+ 	'DEV_PC' => '$TPL_DEVPC',//开发机,用于生成makefile自动部署
+    'ROOT_PATH' => '$TPL_ROOTPATH',//部署根目录
+);
+EOF
+		php run.php && {
+			newapp="out/${appname}"
+			app_trace "newapp is ${newapp}" 
+			[ -d "$newapp" ] && {
+				local dest_dir="${WORK_SVN_DIR}/${projname}/trunk/${appname}"
+				[ ! -d "$dest_dir" ] && mkdir -p "$dest_dir"	
+				app_trace "mv ${newapp} to $dest_dir "
+
+				cp -r ${newapp}/* $dest_dir/ &&  rm -rf $newapp
+			}
+		}
+		
+		app_trace "restore conf.php" 
+		[ -f "conf.php.$$" ] && mv conf.php{.$$,conf}
+		popd 
+	}
+
+
+	return 0
+}
+
+
+function gendao(){
+	:	
+}
+
+########### 
+# MAIN
+########### 
+
+while getopts ":ha:c:p:n:v" optname ; do
+
+	case "${optname}" in 
+		"h")
+			app_trace "Option $optname is specified"
+			usage && exit 0
+			;;	
+		"c")
+			app_trace "Option $optname has value $OPTARG"
+			cgcmd=$OPTARG
+			;;
+		"p")
+			app_trace "Option $optname has value $OPTARG"
+			projname=${OPTARG}
+			;;
+		"n")
+			app_trace "Option $optname has value $OPTARG"
+			cname=${OPTARG}
+			;;
+
+		"a")
+			app_trace "Option $optname has value $OPTARG"
+			appname=$OPTARG
+			;;
+		"v")
+			version
+			;;
+		"?")
+			app_show "Unknown option $OPTARG"
+			;;
+		":")
+			app_show "NO argument value for option $OPTARGS"
+			;;
+		""|*)
+			usage && exit 1 
+			;;
+	esac
+done
+
+projname=${projname:=${PROJNAME}}
+
+[ -z "$cgcmd" ] && usage && exit 0
+[ -z "$appname" ] && usage && exit 0
+
+if [[ "x$cgcmd" -eq "xgenapp" ]] ;then
+	app_show "start exec $cgcmd"
+	echo $cgcmd "${appname}" "${projname}"
+else 
+	[ -z "$cname" ] && { 
+		app_warn "cname is null "
+		usage 
+	} || {
+		app_show "start exec $cgcmd"
+		echo $cgcmd "${appname}" "$cname" 
+	}
+fi

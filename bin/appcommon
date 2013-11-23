@@ -1,0 +1,73 @@
+#!/bin/bash
+SCRIPTNAME=$(basename $0)
+VERSION=0.0.0.1
+DEBUG=1
+ODPWORK_DIR="$HOME/odpwork"
+ODPJUMBO_DIR="$HOME/.jumbo"
+
+WORK_SVN_DIR="$HOME/work"
+
+TPL_NAME=dolfly
+TPL_EMAIL=dongyuezhao@baidu.com
+TPL_DEVPC=dongyuezhao@cq01-rdqa-dev010.cq01.baidu.com
+TPL_ROOTPATH="$ODPWORK_DIR"
+
+PROJNAME="newpro"
+
+
+#####
+#
+#####
+CMDS_APP_CG=( 'showhelp' 'genapp' 'genapi' 'genpage' )
+CMDS_APP_LN=( 'showhelp' 'add_ln' 'del_ln' )
+
+#"app/<appname>/library/<appname>"
+#"php/phplib/<projname>/api/<appname>"
+LNDIRS=( "app/<appname>" "conf/app/<appname>" "webroot/<appname>" "php/phplib/<projname>" "log/<appname>" "data/app/<appname>" )
+
+########### 
+#  FUNCTIONS util 
+###########
+function showhelp(){
+	usage
+}
+function version(){
+	echo "$SCRIPTNAME : version v$VERSION"
+	return 0
+}
+
+function app_show(){
+	local msg=$1
+	if [[ ${DEBUG} -ge 1 ]] ;then
+		show "$msg"
+	fi
+}
+function app_trace(){
+	local msg=$1
+	if [[ ${DEBUG} -ge 4 ]] ; then
+		show "TRACE:$msg"
+	fi
+}
+function app_debug(){
+	local msg=$1
+	if [[ ${DEBUG} -ge 3 ]] ; then
+		show "DEBUG:$msg"
+	fi
+}
+function app_warn(){
+	local msg=$1
+	if [[ ${DEBUG} -ge 2 ]] ; then
+		show "WARN:$msg"
+	fi
+}
+function show(){
+	local msg=$1
+	echo "$msg"
+}
+function deal_dir_tpl(){
+	local lndir=$1
+	local appname=$2
+	local projname=$3
+	local cur_lndir=$( echo $lndir | sed -e "s/<appname>/${appname}/g;s/<projname>/${projname}/g" )
+	echo $cur_lndir
+}

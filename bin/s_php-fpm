@@ -1,0 +1,2 @@
+#!/bin/bash
+cd  /home/users/dongyuezhao/.jumbo/php/sbin &&  ./php-fpm start

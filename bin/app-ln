@@ -1,0 +1,117 @@
+#!/bin/bash
+commonfile=$( cd $( dirname $0 ) >/dev/null 2>&1; pwd )/appcommon
+[ -f "${commonfile}" ] && { 
+	. "${commonfile}" 
+}|| {
+	echo "${commonfile} is not exists" ;exit 1
+}
+
+########### 
+#  FUNCTIONS util 
+###########
+
+
+function usage(){
+	local SCRIPTNAME=${SCRIPTNAME:=$(basename $0)}
+	cat <<EOF
+Usage:  ${SCRIPTNAME} is a tools for create links file 
+	${SCRIPTNAME} -c <command> <[-p <projname> [-a <appname>] ]| [-a <appname>]> 
+		command : ${CMDS_APP_LN[@]}
+			-p <projname> : projname must be an exists project name
+			-a <appname>  : appname must be an exists project's app name
+	${SCRIPTNAME} -h show this help  
+EOF
+}
+
+########### 
+# FUNCTIONS command
+########### 
+
+function add_ln(){
+	local appname=$1
+	local projname=$2
+
+	[ -z "$appname" ] &&  app_show "the appname is null " && exit 1
+
+	for lndir in ${LNDIRS[@]} ; do
+		local cur_lndir=$( deal_dir_tpl "$lndir" "${appname}" "${projname}" ) 
+
+		local ln_target=${ODPWORK_DIR}/${cur_lndir}
+		ln_name=${ODPJUMBO_DIR}/${cur_lndir}
+
+		if [ -e "${ln_target}" ]  && [ ! -e "${ln_name}" ] ; then
+
+			app_show "ln ${ln_target} to ${ln_name}"
+			ln -s $ln_target $ln_name
+
+		else
+			app_warn "skip ln  ${ln_target} to ${ln_name}" 
+		fi
+
+	done
+}
+
+function del_ln(){
+	appname=$1
+	projname=$2
+	[ -z "$appname" ] &&  app_show "the appname is null " && exit 1
+	
+	for lndir in ${LNDIRS[@]} ; do
+		cur_lndir=$( deal_dir_tpl "$lndir" "${appname}" "${projname}" )
+		echo $cur_lndir
+		ln_jumbo=${ODPJUMBO_DIR}/${cur_lndir}
+		
+		[ -L "$ln_jumbo" ] && {
+			app_show "del ln $ln_jumbo"
+			rm -rf "$ln_jumbo"
+		} || {
+			app_warn "skip $ln_jumbo"
+		}
+
+	done
+}
+
+########### 
+# MAIN
+########### 
+
+while getopts ":ha:c:p:v" optname ; do
+
+	case "${optname}" in 
+		"h")
+			app_trace "Option $optname is specified"
+			usage && exit 0
+			;;	
+		"c")
+			app_trace "Option $optname has value $OPTARG"
+			lncmd=$OPTARG
+			;;
+		"p")
+			app_trace "Option $optname has value $OPTARG"
+			projname=${OPTARG}
+			;;
+		"a")
+			app_trace "Option $optname has value $OPTARG"
+			appname=$OPTARG
+			;;
+
+		"v")
+			version
+			;;
+		"?")
+			app_show "Unknown option $OPTARG"
+			;;
+		":")
+			app_show "NO argument value for option $OPTARGS"
+			;;
+		""|*)
+			usage && exit 1 
+			;;
+	esac
+done
+
+projname=${projname:=${PROJNAME}}
+
+[ -z "$lncmd" ] && usage && exit 0
+[ -z "$appname" ] && usage && exit 0
+$lncmd "${appname}" "${projname}" 
