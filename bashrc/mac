@@ -121,45 +121,6 @@ function iplist(){
 	fi
 }
 
-
-function showtd(){	
-	td `osascript $HOME/.bin/td.scpt  `
-}
-function td(){
-	passcode=$1
-	ip=$2
-	server=$3
-	if [ "x$passcode" == "x" ] ; then 
-		echo "passcode is need" 
-		return 1
-	fi
-	#--------
-	USERNAME="yuezhao"
-	PREPASSCODE="y21243"
-	#--------
-
-	s_l=('202.106.182.212' '202.106.184.253' '219.142.118.199' '202.106.182.212')
-	case "$server" in 
-		"t1") 
-			C_SERVER=${s_l[0]}
-			;;
-		"t2")
-			C_SERVER=${s_l[1]}
-			;;
-		"d1")
-			C_SERVER=${s_l[2]}
-			;;
-		"d2")
-			C_SERVER=${s_l[3]}
-			;;
-		*)
-			C_SERVER=${s_l[0]}
-			;;
-	esac
-	expect "$HOME/.bin/ssh.exp" "${C_SERVER}" "${ip}" "${PREPASSCODE}$passcode" "${USERNAME}" "${PASSWD}" "${PORT}"
-	sleep 1
-}
-
 # create the pane with irssi's nicklist
 function irssi_nickpane() {
 	tmux renamew irssi                                              # name the window
