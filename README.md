@@ -19,6 +19,7 @@ source $HOME/.vim/ftplugin/dyz.vim
 ```
 
 这个删除
+
 2. 在家目录下建立
 
 ```
@@ -31,6 +32,7 @@ mkdir -p .vim/bundle
 cd ~/.vim/bundle
 git clone git@github.com:dolfly/vundle.git 
 ```
+
 4. 打开 vim
 
 命令行模式下执行
